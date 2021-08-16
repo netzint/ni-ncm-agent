@@ -1,0 +1,125 @@
+#!/usr/bin/python3
+
+#
+# Name: ni-icinga2-agent
+# Description: Agent installer for Icinga with Netzint configuration
+# Author: Lukas Spitznagel (lukas.spitznagel@netzint.de)
+#
+import optparse
+import os
+
+def printHeader():
+    header = """
+\x1b[38;5;81m
+█████████████████████  \x1b[38;5;27m  ██████████████████████████████████████████████████\x1b[38;5;81m
+███████     █████████  \x1b[38;5;27m  ██████████████████████████████████████████████████\x1b[38;5;81m
+████    ███   ███████  \x1b[38;5;27m  ██████   ██████  ██████      ███  ██████████  ████\x1b[38;5;81m
+███  ████████   █████  \x1b[38;5;27m  ██████    █████  ████   ████  ██   ████████   ████\x1b[38;5;81m
+███  ██████████  ████  \x1b[38;5;27m  ██████  █  ████  ███  ██████████    ██████    ████\x1b[38;5;81m
+███  ███████████  ███  \x1b[38;5;27m  ██████  ██  ███  ██  ███████████  █  ████  █  ████\x1b[38;5;81m
+███  ███████████  ███  \x1b[38;5;27m  ██████  ███  ██  ██  ███████████  ██  ██  ██  ████\x1b[38;5;81m
+███  ███████████  ███  \x1b[38;5;27m  ██████  ████  █  ███  ██████████  ███    ███  ████\x1b[38;5;81m
+████   ████████  ████  \x1b[38;5;27m  ██████  █████    ████   ████  ██  ████  ████  ████\x1b[38;5;81m
+███████   ███   █████  \x1b[38;5;27m  ██████  ██████   ██████      ███  ██████████  ████\x1b[38;5;81m
+█████████     ███████  \x1b[38;5;27m  ██████████████████████████████████████████████████\x1b[38;5;81m
+█████████████████████  \x1b[38;5;27m  ██████████████████████████████████████████████████\x1b[38;5;81m
+
+\x1b[0;33;40mNetzint Centralized Monitoring - Agent Installer
+\x1b[0m
+    """
+    print(header)
+
+def error(message):
+    print("[ERROR] " +  message)
+    exit()
+
+def main():
+    printHeader()
+
+    print("Check Internet connection...")
+    return_code = os.system("ping -c 1 www.google.de > /dev/null 2>&1")
+    if return_code != 0:
+        error("No internetconnection avaliable!")
+
+    print("Installing Icinga...")
+    return_code = os.system("apt-get -y install icinga2 > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot install icinga2!")
+
+    ni_node_name_check = True
+    print("Enter the name of this node. Use the same name as in IcingaWeb2! (min. 5 chars)")
+    while ni_node_name_check:
+        ni_node_name = input("Name: ")
+        if(len(ni_node_name) > 5):
+            ni_node_name_check = False;
+        else:
+            print("Invalid input!")
+
+    print()
+
+    ni_ticket_check = True
+    print("Enter the generated ticket. You find it under Host -> Agent!")
+    while ni_ticket_check:
+        ni_ticket = input("Ticket: ")
+        if(len(ni_ticket) > 5):
+            ni_ticket_check = False;
+        else:
+            print("Invalid input!")
+
+    print()
+
+    ni_master_type_check = True
+    print("Do you want to add this agent to the master or to a satellite? (Satellite = S / Master = M)")
+    while ni_master_type_check:
+        ni_master_type = input("Type: ")
+        if(ni_master_type is "S") or (ni_master_type is "M"):
+            ni_master_type_check = False;
+        else:
+            print("Invalid input!")
+
+    print()
+
+    if ni_master_type is "S":
+        ni_endpoint = ["", "", "5665"]
+        ni_endpoint[0] = input("Enter satellite common name: ")
+        ni_endpoint[1] = input("Enter satellite ip-address: ")
+    elif ni_master_type is "M":
+        ni_endpoint = ["ncm.netzint.de", "ncm.netzint.de", "5665"]
+    else:
+        error("No master type defined!")
+
+
+    ###################################
+
+    return_code = os.system("mkdir -p /var/lib/icinga2/certs > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot create directory!")
+
+    return_code = os.system("chown -R nagios:nagios /var/lib/icinga2/certs/ > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot set rights!")
+
+    return_code = os.system("icinga2 pki new-cert --cn " + ni_node_name + " --key /var/lib/icinga2/certs/" + ni_node_name + ".key --cert /var/lib/icinga2/certs/" + ni_node_name + ".crt > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot create certificate!")
+
+    return_code = os.system("icinga2 pki save-cert --key /var/lib/icinga2/certs/" + ni_node_name + ".key --cert /var/lib/icinga2/certs/" + ni_node_name + ".crt --host " + ni_endpoint[1] + " --trustedcert /var/lib/icinga2/certs/trusted-master.crt > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot save certificate!")
+
+    return_code = os.system("icinga2 pki request --host " + ni_endpoint[1] + " --port 5665 --ticket " + ni_ticket + " --key /var/lib/icinga2/certs/" + ni_node_name + ".key --cert /var/lib/icinga2/certs/" + ni_node_name + ".crt --trustedcert /var/lib/icinga2/certs/trusted-master.crt --ca /var/lib/icinga2/certs/ca.crt > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot sign certificate!")
+
+    return_code = os.system("icinga2 node setup --cn " + ni_node_name + " --endpoint " + ni_endpoint[0] + "," + ni_endpoint[1] + "," + ni_endpoint[2] + " --master_host " + ni_endpoint[1] + " --ticket " + ni_ticket + " --zone " + ni_node_name + " --accept-config --accept-commands --disable-confd --trustedcert /var/lib/icinga2/certs/trusted-master.crt > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot setup icinga2!")
+
+    return_code = os.system("systemctl restart icinga2 > /dev/null 2>&1")
+    if return_code != 0:
+        error("Cannot restart icinga2!")
+
+    print("Setup finished!")
+
+if __name__=="__main__":
+    main()

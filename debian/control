@@ -1,0 +1,12 @@
+Source: ni-ncm-agent
+Section: admin
+Priority: optional
+Maintainer: Lukas Spitznagel <lukas.spitznagel@netzint.de>
+Build-Depends: debhelper (>= 4.0.0), fakeroot
+
+Package: ni-ncm-agent
+Architecture: all
+Depends: nagios-plugins, python3, python3-requests, python3-pip
+Homepage: www.netzint.de
+Recommends:
+Description: NCM Agent installer from Netzint GmbH

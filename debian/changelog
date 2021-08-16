@@ -1,0 +1,77 @@
+ni-ncm-agent (1.0.4-0) bionic; urgency=medium
+
+  * Update all
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Mon, 10 May 2021 11:43:46 +0200
+
+ni-ncm-agent (1.0.3-0) bionic; urgency=medium
+
+  * Update all
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Mon, 10 May 2021 11:07:46 +0200
+
+ni-ncm-agent (1.0.2-0) bionic; urgency=medium
+
+  * Update all
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Fri, 12 Feb 2021 11:07:46 +0200
+
+ni-ncm-agent (1.0.1-0) bionic; urgency=medium
+
+  * Update installer and add depencies
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Fri, 05 Feb 2021 15:42:46 +0200
+
+ni-ncm-agent (1.0.0-8) bionic; urgency=medium
+
+  * Update preinstaller
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 12 Jan 2021 12:49:46 +0200
+
+ni-ncm-agent (1.0.0-7) bionic; urgency=medium
+
+  * Update preinstaller
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 02 Dec 2020 11:47:46 +0200
+
+ni-ncm-agent (1.0.0-6) bionic; urgency=medium
+
+  * Update preinstaller
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 22 Oct 2020 15:13:46 +0200
+
+ni-ncm-agent (1.0.0-5) bionic; urgency=medium
+
+  * Update configscript and preinstaller
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 02 Sep 2020 13:20:46 +0200
+
+ni-ncm-agent (1.0.0-4) bionic; urgency=medium
+
+  * Add sepsesam plugin for ncb
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 09 Jun 2020 11:42:28 +0200
+
+ni-ncm-agent (1.0.0-3) bionic; urgency=medium
+
+  * Remove some bugs
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 18 May 2020 16:57:27 +0200
+
+ni-ncm-agent (1.0.0-2) bionic; urgency=medium
+
+  * Change icinga installation
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 18 May 2020 15:03:13 +0200
+
+ni-ncm-agent (1.0.0-1) bionic; urgency=medium
+
+  * Change depencies
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 18 May 2020 14:55:10 +0200
+
+ni-ncm-agent (1.0.0-0) bionic; urgency=medium
+
+  * Initial build with new name
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 12 May 2020 16:59:06 +0200
