@@ -72,7 +72,7 @@ install: build
 	# fixing default not being installed
 	mkdir -p debian/ni-ncm-agent
 #	cp -r lib debian/linuxmuster-webui7
-	rsync -avr --exclude='.installed' usr debian/ni-ncm-agent
+	rsync -avr --exclude='.installed' usr etc debian/ni-ncm-agent
 
 
 # Build architecture-independent files here.
