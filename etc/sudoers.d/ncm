@@ -1,1 +1,2 @@
 nagios ALL=NOPASSWD: /usr/bin/pvesh
+nagios ALL=NOPASSWD: /usr/bin/docker
