@@ -3,35 +3,19 @@ set -e
 
 case "$1" in
     install|configure)
-        . /etc/os-release
-	if [[ ${ID} == "ubuntu" ]]; then
-            if [ ! -z ${UBUNTU_CODENAME+x} ]; then
-                DIST="${UBUNTU_CODENAME}"
-            else
-                DIST="$(lsb_release -c| awk '{print $2}')"
-            fi
+        wget -O - https://packages.icinga.com/icinga.key | gpg --dearmor -o /usr/share/keyrings/icinga-archive-keyring.gpg --batch --yes
 
-            if [ ! -f "/etc/apt/sources.list.d/${DIST}-icinga.list" ]; then
-                wget -O - https://packages.icinga.com/icinga.key | apt-key add -
-                echo "deb http://packages.icinga.com/ubuntu icinga-${DIST} main" > /etc/apt/sources.list.d/${DIST}-icinga.list
-                echo "deb-src http://packages.icinga.com/ubuntu icinga-${DIST} main" >> /etc/apt/sources.list.d/${DIST}-icinga.list
-            fi
-        elif [[ ${ID} == "debian" ]]; then
-            if [ ! -z ${VERSION_CODENAME+x} ]; then
-                DIST="${VERSION_CODENAME}"
-            else
-                DIST="buster"
-            fi
+        . /etc/os-release; if [ ! -z ${UBUNTU_CODENAME+x} ]; then DIST="${UBUNTU_CODENAME}"; else DIST="$(lsb_release -c| awk '{print $2}')"; fi; \
+        echo "deb [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] http://packages.icinga.com/ubuntu icinga-${DIST} main" > \
+        /etc/apt/sources.list.d/${DIST}-icinga.list
 
-            if [ ! -f "/etc/apt/sources.list.d/${DIST}-icinga.list" ]; then
-                wget -O - https://packages.icinga.com/icinga.key | apt-key add -
-                echo "deb http://packages.icinga.com/debian icinga-${DIST} main" > /etc/apt/sources.list.d/${DIST}-icinga.list
-                echo "deb-src http://packages.icinga.com/debian icinga-${DIST} main" >> /etc/apt/sources.list.d/${DIST}-icinga.list
-            fi
-        fi
+        echo "deb-src [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] http://packages.icinga.com/ubuntu icinga-${DIST} main" >> \
+        /etc/apt/sources.list.d/${DIST}-icinga.list
 
         sleep 5
+
         apt-get update
+
         exit 0
         ;;
     upgrade|abort-upgrade)
