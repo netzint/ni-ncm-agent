@@ -23,7 +23,7 @@ jobs:
           key: ${{ secrets.REPO_SSH_KEY }}
           port: 22
           source: "./*"
-          target: ${{ secrets.REPO_SSH_INCOMING_PATH_NETZINT }}
+          target: ${{ secrets.REPO_SSH_INCOMING_PATH_NCM }}
           
 
       - name: Publish package
@@ -33,4 +33,4 @@ jobs:
           username: ${{ secrets.REPO_SSH_USER }}
           key: ${{ secrets.REPO_SSH_KEY }}
           port: 22
-          script: /usr/local/bin/publish-debs netzint
+          script: /usr/local/bin/publish-debs ncm
