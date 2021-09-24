@@ -1,10 +1,10 @@
-ni-ncm-agent (1.0.8-0~bionic) bionic; urgency=medium
+ni-ncm-agent (1.0.8-bionic) bionic; urgency=medium
 
   * Test bionic
 
  -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 22 Aug 2021 16:00:46 +0200
 
-ni-ncm-agent (1.0.8-0~focal) focal; urgency=medium
+ni-ncm-agent (1.0.8-focal) focal; urgency=medium
 
   * Test focal
 
