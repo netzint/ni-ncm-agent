@@ -2,4 +2,14 @@
 
 # build the debian package
 
-dpkg-buildpackage -rfakeroot -tc -sa -us -uc -I".directory" -I".git" -I"buildpackage.sh"
+platforms=( bionic focal )
+
+for platform in "${platforms[@]}"
+do
+  sed "s/%platform%/$platform/g" debian/changelog.template > debian/changelog
+  dpkg-buildpackage -rfakeroot -tc -sa -us -uc -I".directory" -I".git" -I"buildpackage.sh"
+  rm debian/changelog
+done
+
+
+#dpkg-buildpackage -rfakeroot -tc -sa -us -uc -I".directory" -I".git" -I"buildpackage.sh"

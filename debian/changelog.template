@@ -1,6 +1,6 @@
-ni-ncm-agent (1.0.8-bionic) bionic; urgency=medium
+ni-ncm-agent (1.0.9-%platform%) %platform%; urgency=medium
 
-  * Test bionic
+  * Test 1
 
  -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 22 Aug 2021 16:00:46 +0200
 
