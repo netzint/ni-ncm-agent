@@ -1,3 +1,9 @@
+ni-ncm-agent (1.1.0-%platform%) %platform%; urgency=medium
+
+  * Add bullseye and update check_proxmox
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Mon, 11 Oct 2021 14:53:46 +0200
+
 ni-ncm-agent (1.0.9-%platform%) %platform%; urgency=medium
 
   * Test 1
