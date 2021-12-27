@@ -134,8 +134,16 @@ def main():
         message = ""
         error = False
         for entry in json:
-            line = "Name: " + entry["vendor"].replace(" ", "") + " " + entry["model"] + ", Size: " + str(round(entry["size"] / 1024 / 1024 / 1024)) + " GB, Path: " + entry["devpath"] + "\n"
-            if entry["health"] == "OK" or entry["health"] == "PASSED" or entry["health"] == "UNKNOWN":
+            if "unknown" in entry["vendor"]:
+                line = "Name: " + entry["model"]
+            else:
+                line = "Name: " + entry["vendor"].replace(" ", "") + " " + entry["model"]
+                
+            line += ", Size: " + str(round(entry["size"] / 1024 / 1024 / 1024)) + " GB, Path: " + entry["devpath"] + "\n"
+            
+            if entry["health"] == "OK" or entry["health"] == "PASSED":
+                message += "[OK] " + line
+            elif entry["health"] == "UNKNOWN":
                 message += "[OK] " + line
             else:
                 message += "[CRITICAL] " + line
