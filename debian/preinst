@@ -5,7 +5,7 @@ case "$1" in
     install|configure)
         wget -O - https://packages.icinga.com/icinga.key | gpg --dearmor -o /usr/share/keyrings/icinga-archive-keyring.gpg --batch --yes
 
-        source /etc/os-release
+        . /etc/os-release
 
         if [ $ID == "ubuntu" ] || [ $ID == "debian" ]; then
             echo "Current os is $ID with codename $VERSION_CODENAME... Install repository..."
@@ -18,7 +18,7 @@ case "$1" in
 
             if [ -f "/etc/netzint/ni-ncm-agent/icinga-repo.ini" ]; then
                 echo "Fallback exist. Now using this as icinga repository!"
-                source /etc/netzint/ni-ncm-agent/icinga-repo.ini
+                . /etc/netzint/ni-ncm-agent/icinga-repo.ini
             else
                 echo "########"
                 echo "Fallback does not exist... Please refer the manuel or ask for help!"

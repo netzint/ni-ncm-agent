@@ -2,6 +2,11 @@ name: Publish Release
 
 on:
   workflow_dispatch
+  workflow_run:
+    workflows: ["Build Release"]
+    types:
+      - completed
+
 
 jobs:
   publish_latest_release_to_package_server:
