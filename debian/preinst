@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 case "$1" in
@@ -7,7 +7,7 @@ case "$1" in
 
         . /etc/os-release
 
-        if [ $ID == "ubuntu" ] || [ $ID == "debian" ]; then
+        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
             echo "Current os is $ID with codename $VERSION_CODENAME... Install repository..."
         else
             echo "Could not find os version for icinga repository... Try fallback..."
