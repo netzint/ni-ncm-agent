@@ -1,3 +1,9 @@
+ni-ncm-agent (1.1.5-%platform%) %platform%; urgency=medium
+
+  * Add buster to build
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 29 Dec 2021 10:15:46 +0200
+
 ni-ncm-agent (1.1.4-%platform%) %platform%; urgency=medium
 
   * Update preinstaller
