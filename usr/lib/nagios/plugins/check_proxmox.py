@@ -54,7 +54,7 @@ def __exit_unknown(message):
 
 def getValueFromProxmox(url):
     url = url.replace("$hostname$", socket.gethostname())
-    return json.loads(__execute(["sudo", "pvesh", "get", url, "--output-format json"]))
+    return json.loads(__execute(["sudo", "pvesh", "get", url, "--output-format json", "2> /dev/null"]))
 
 def main():
     optp = optparse.OptionParser()
