@@ -36,6 +36,9 @@ case "$1" in
 
         apt-get update
 
+        # delete old ncm sudoers file, will be replaced by new one
+        rm -rf /etc/sudoers.d/ncm
+
         exit 0
         ;;
     upgrade|abort-upgrade)

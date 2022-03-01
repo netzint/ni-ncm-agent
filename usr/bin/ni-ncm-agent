@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 ###########################################
-# 
+#
 # by lukas.spitznagel@netzint.de
 # Version 1.0 (05.02.2021)
-# 
+#
 ###########################################
 
 import os
@@ -15,34 +15,45 @@ import json
 
 from subprocess import PIPE
 
+
 def __execute(command):
-    # stream = os.popen(command)
-    # return stream.read()
     return subprocess.run(command, stdout=PIPE, stderr=PIPE)
+
 
 def __exit(parser):
     parser.print_help()
     exit()
 
+
 def __error(message, result):
     stderr = result.stderr.decode("utf-8")
     stdout = result.stdout.decode("utf-8")
-    print("[ERROR] " + message + "\n" + "Output: " + stdout + "\n" + "Error: " + stderr)
+    print("[ERROR] " + message + "\n" + "Output: " +
+          stdout + "\n" + "Error: " + stderr)
     exit()
+
 
 def main():
     print("Netzint Centralized Monitoring - Agent Installer")
     print()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--master", required = False, help = "Register on NCM master", action="store_true")
-    parser.add_argument("--satellite", required = False, help = "Register on NCM satellite. Then use options --ncm-name and --ncm-address!", action="store_true")
-    parser.add_argument("--name", required = True, help = "Enter the name for this host")
-    parser.add_argument("--ncm-name", required = False, help = "Enter the common name of ncm", dest="ncmname")
-    parser.add_argument("--ncm-address", required = False, help = "Enter the address of ncm", dest="ncmaddr")
-    parser.add_argument("--install", required = False, help = "Install icinga2", action="store_true")
-    parser.add_argument("--debug", required = False, help = "Print debug output", action="store_true")
-    parser.add_argument("--quiet", required = False, help = "Don't ask any questions", action="store_true")
+    parser.add_argument("--master", required=False,
+                        help="Register on NCM master", action="store_true")
+    parser.add_argument("--satellite", required=False,
+                        help="Register on NCM satellite. Then use options --ncm-name and --ncm-address!", action="store_true")
+    parser.add_argument("--name", required=True,
+                        help="Enter the name for this host")
+    parser.add_argument("--ncm-name", required=False,
+                        help="Enter the common name of ncm", dest="ncmname")
+    parser.add_argument("--ncm-address", required=False,
+                        help="Enter the address of ncm", dest="ncmaddr")
+    parser.add_argument("--install", required=False,
+                        help="Install icinga2", action="store_true")
+    parser.add_argument("--debug", required=False,
+                        help="Print debug output", action="store_true")
+    parser.add_argument("--quiet", required=False,
+                        help="Don't ask any questions", action="store_true")
     args = parser.parse_args()
 
     icinga_endpoint = {}
@@ -70,7 +81,8 @@ def main():
         print("Build icinga_endpoint with master or with passed data:")
         print(icinga_endpoint)
 
-    ticket = requests.post("https://ncm.netzint.de/tools/getTicket.php", data = { "host": args.name, "pw": "d51c5b171d6cdfd896a2" })
+    ticket = requests.post("https://ncm.netzint.de/tools/getTicket.php",
+                           data={"host": args.name, "pw": "d51c5b171d6cdfd896a2"})
     ticket = json.loads(ticket.text)
     if args.debug:
         print("Download ticket from ncm.netzint.de and get:")
@@ -86,7 +98,6 @@ def main():
         print("Parent:" + str(icinga_endpoint))
         print("Sure you want to continue? <ENTER>")
         input()
-
 
     if args.install:
         result = __execute(["apt-get", "-y", "install", "icinga2"])
@@ -104,29 +115,29 @@ def main():
         __error("Error while change permissions", result)
 
     # ---- Create local certificate ----
-    result = __execute(["icinga2", "pki", "new-cert", 
-                        "--cn", args.name, 
-                        "--key", path + args.name + ".key", 
+    result = __execute(["icinga2", "pki", "new-cert",
+                        "--cn", args.name,
+                        "--key", path + args.name + ".key",
                         "--cert", path + args.name + ".crt"])
     if result.returncode != 0:
         __error("Error while create certificates locally", result)
 
     # ---- Download certificate from parent (master/satellite) ----
-    result = __execute(["icinga2", "pki", "save-cert", 
-                        "--key", path + args.name + ".key", 
-                        "--cert", path + args.name + ".crt", 
-                        "--host", icinga_endpoint["address"], 
+    result = __execute(["icinga2", "pki", "save-cert",
+                        "--key", path + args.name + ".key",
+                        "--cert", path + args.name + ".crt",
+                        "--host", icinga_endpoint["address"],
                         "--trustedcert", path + "trusted-master.crt"])
     if result.returncode != 0:
         __error("Error while getting remote certificates", result)
 
     # ---- Sign certificate an download CA ----
-    result = __execute(["icinga2", "pki", "request", 
-                        "--key", path + args.name + ".key", 
-                        "--cert", path + args.name + ".crt", 
+    result = __execute(["icinga2", "pki", "request",
+                        "--key", path + args.name + ".key",
+                        "--cert", path + args.name + ".crt",
                         "--host", icinga_endpoint["address"],
                         "--port", icinga_endpoint["port"],
-                        "--ticket", ticket, 
+                        "--ticket", ticket,
                         "--trustedcert", path + "trusted-master.crt",
                         "--ca", path + "ca.crt"])
     if result.returncode != 0:
@@ -135,7 +146,9 @@ def main():
     # ---- Setup Node ----
     result = __execute(["icinga2", "node", "setup",
                         "--cn", args.name,
-                        "--endpoint", icinga_endpoint["name"] + "," + icinga_endpoint["address"] + "," + icinga_endpoint["port"],
+                        "--endpoint", icinga_endpoint["name"] + "," +
+                        icinga_endpoint["address"] +
+                        "," + icinga_endpoint["port"],
                         "--master_host", icinga_endpoint["address"],
                         "--ticket", ticket,
                         "--zone", args.name,
@@ -155,5 +168,6 @@ def main():
     print("If you see this message the setup was successful!")
     print("Bye!")
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
