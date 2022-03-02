@@ -1,3 +1,10 @@
+ni-ncm-agent (1.1.7-%platform%) %platform%; urgency=medium
+
+  * Change proxmox plugin
+  * Edit sudoers and preinstall file
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 2 Mar 2022 09:09:46 +0200
+
 ni-ncm-agent (1.1.6-%platform%) %platform%; urgency=medium
 
   * Change docker and proxmox plugin
