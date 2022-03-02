@@ -1,3 +1,5 @@
 nagios ALL=NOPASSWD: /usr/bin/pvesh
 nagios ALL=NOPASSWD: /usr/bin/ceph
 nagios ALL=NOPASSWD: /usr/bin/docker
+nagios ALL=NOPASSWD: /usr/sbin/proxmox-backup-debug
+nagios ALL=NOPASSWD: /usr/sbin/proxmox-backup-manager
