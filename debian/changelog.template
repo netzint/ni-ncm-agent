@@ -1,3 +1,9 @@
+ni-ncm-agent (1.1.9-%platform%) %platform%; urgency=medium
+
+  * Add pbs plugin
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 2 Mar 2022 16:12:46 +0200
+
 ni-ncm-agent (1.1.8-%platform%) %platform%; urgency=medium
 
   * Add missing line at the end
