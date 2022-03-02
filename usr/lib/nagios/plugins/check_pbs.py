@@ -103,7 +103,7 @@ def main():
 
             message += name + " - Usage: " + KBToTB(used) + " / " + KBToTB(total) + " TB = " + str(round((used / total) * 100, 2)) + "% - Estimated Full: " + estimatedFullDate.strftime('%d.%m.%Y %H:%M:%S') + " (" + str(timespanEstimatedFullDate.days) + " days)"
             prefdata += " " + name + "_usage=" + KBToTB(used) + ";" + KBToTB(total, 0.8) + ";" + KBToTB(total, 0.9) + ";0;" + KBToTB(total)
-            prefdata += " " + name + "_full=" + str(timespanEstimatedFullDate.days) + ";" + str(timespanEstimatedFullDate.days - int(args.warning)) + ";" + str(timespanEstimatedFullDate.days - int(args.critical)) + ";0;10000"
+            prefdata += " " + name + "_full=" + str(timespanEstimatedFullDate.days)
 
         if error:
             __exit_critical(message + " |" + prefdata)
