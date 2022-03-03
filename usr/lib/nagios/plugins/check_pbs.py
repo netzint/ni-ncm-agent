@@ -70,7 +70,7 @@ def main():
         error = False
         for entry in values:
             line = "Name: " + entry["vendor"].replace(" ", "") + " " + entry["model"] + ", Size: " + KBToTB(entry["size"]) + " GB, Path: " + entry["devpath"] + "\n"
-            if entry["status"].upper() == "OK" or entry["status"].upper() == "PASSED":
+            if entry["status"].upper() == "OK" or entry["status"].upper() == "PASSED" or entry["status"].upper() == "UNKNOWN":
                 message += "[OK] " + line
             else:
                 message += "[CRITICAL] " + line
@@ -121,7 +121,7 @@ def main():
                 timespan = (endtime - starttime)
                 if entry["status"] == "OK":
                     __exit_ok("Last " + entry["worker_type"] + " at " + entry["worker_id"] + " was successful! Runtime was " + str(timespan))
-                __exit_critical("Last " + entry["worker_type"] + " at " + entry["worker_id"] + " failed!")
+                __exit_warning("Last " + entry["worker_type"] + " at " + entry["worker_id"] + " failed!")
 
 if __name__=="__main__":
     main()
