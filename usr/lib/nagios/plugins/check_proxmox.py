@@ -130,11 +130,13 @@ def main():
         message = ""
         error = False
         for entry in json:
-            line = "Name: " + entry["vendor"].replace(" ", "") + " " + entry["model"] + ", Size: " + str(round(entry["size"] / 1024 / 1024 / 1024)) + " GB, Path: " + entry["devpath"] + "\n"
+            line = "Name: " + entry["vendor"].replace(" ", "") + " " + entry["model"] + ", Size: " + str(round(entry["size"] / 1024 / 1024 / 1024)) + " GB, Path: " + entry["devpath"] 
             if entry["health"] == "OK" or entry["health"] == "PASSED":
-                message += "[OK] " + line
+                message += "[OK] " + line + "\n"
+            elif entry["health"] == "UNKNOWN":
+                message += "[OK] " + line + " (RAID Controller, no SMART values!)\n" 
             else:
-                message += "[CRITICAL] " + line
+                message += "[CRITICAL] " + line + "\n"
                 error = True
 
         if error:
