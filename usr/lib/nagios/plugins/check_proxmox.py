@@ -152,8 +152,8 @@ def main():
         error = False
         warning = False
         for entry in json:
-            json2 = getValueFromProxmox("/nodes/$hostname$/qemu/" + entry["vmid"] + "/snapshot")
-            line = "Name: " + entry["name"] + "(" + entry["vmid"] + "), Status: " + entry["status"] + ", Uptime: " + str(datetime.timedelta(seconds=int(entry["uptime"])))
+            json2 = getValueFromProxmox("/nodes/$hostname$/qemu/" + str(entry["vmid"]) + "/snapshot")
+            line = "Name: " + entry["name"] + "(" + str(entry["vmid"]) + "), Status: " + entry["status"] + ", Uptime: " + str(datetime.timedelta(seconds=int(entry["uptime"])))
             if len(json2) > 1:
                 line += ", " + str(len(json2) - 1) + " Snapshot(s): "
                 tmp_error = False
