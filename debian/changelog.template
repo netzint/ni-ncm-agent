@@ -1,3 +1,10 @@
+ni-ncm-agent (1.2.2-%platform%) %platform%; urgency=medium
+
+  * 4d799152178c5fb1fd18930905a9e32c46c808b4
+  * 20398bb5f378272a8a4be8c9707c15b888c2b44f
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 23 May 2022 10:50:46 +0200
+
 ni-ncm-agent (1.2.1-%platform%) %platform%; urgency=medium
 
   * Edit mistake in pbs plugin
