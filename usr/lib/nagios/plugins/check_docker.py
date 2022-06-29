@@ -15,7 +15,7 @@ import json
 import datetime
 
 def __execute(command):
-    commandline = ""
+    commandline = "sudo "
     for cmd in command:
         commandline += cmd + " "
     stream = os.popen(commandline)

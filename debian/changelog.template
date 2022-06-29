@@ -1,3 +1,83 @@
+ni-ncm-agent (1.2.2-%platform%) %platform%; urgency=medium
+
+  * 4d799152178c5fb1fd18930905a9e32c46c808b4
+  * 20398bb5f378272a8a4be8c9707c15b888c2b44f
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 23 May 2022 10:50:46 +0200
+
+ni-ncm-agent (1.2.1-%platform%) %platform%; urgency=medium
+
+  * Edit mistake in pbs plugin
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 3 Mar 2022 16:44:46 +0200
+
+ni-ncm-agent (1.2.0-%platform%) %platform%; urgency=medium
+
+  * Edit mistake in pbs plugin
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 2 Mar 2022 16:12:46 +0200
+
+ni-ncm-agent (1.1.9-%platform%) %platform%; urgency=medium
+
+  * Add pbs plugin
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 2 Mar 2022 16:12:46 +0200
+
+ni-ncm-agent (1.1.8-%platform%) %platform%; urgency=medium
+
+  * Add missing line at the end
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 2 Mar 2022 09:31:46 +0200
+
+ni-ncm-agent (1.1.7-%platform%) %platform%; urgency=medium
+
+  * Change proxmox plugin
+  * Edit sudoers and preinstall file
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 2 Mar 2022 09:09:46 +0200
+
+ni-ncm-agent (1.1.6-%platform%) %platform%; urgency=medium
+
+  * Change docker and proxmox plugin
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 29 Dec 2021 13:29:46 +0200
+
+ni-ncm-agent (1.1.5-%platform%) %platform%; urgency=medium
+
+  * Add buster to build
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Wed, 29 Dec 2021 10:15:46 +0200
+
+ni-ncm-agent (1.1.4-%platform%) %platform%; urgency=medium
+
+  * Update preinstaller
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 28 Dec 2021 14:59:46 +0200
+
+ni-ncm-agent (1.1.3-%platform%) %platform%; urgency=medium
+
+  * Update preinstaller
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 28 Dec 2021 14:43:46 +0200
+
+ni-ncm-agent (1.1.2-%platform%) %platform%; urgency=medium
+
+  * Update preinstaller for multiuse with debian and ubuntu
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 28 Dec 2021 14:28:46 +0200
+
+ni-ncm-agent (1.1.1-%platform%) %platform%; urgency=medium
+
+  * Update proxmox check
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Tue, 28 Dec 2021 12:26:46 +0200
+
+ni-ncm-agent (1.1.0-%platform%) %platform%; urgency=medium
+
+  * Add bullseye and update check_proxmox
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Mon, 11 Oct 2021 14:53:46 +0200
+
 ni-ncm-agent (1.0.9-%platform%) %platform%; urgency=medium
 
   * Test 1

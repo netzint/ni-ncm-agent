@@ -1,20 +1,43 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 case "$1" in
     install|configure)
         wget -O - https://packages.icinga.com/icinga.key | gpg --dearmor -o /usr/share/keyrings/icinga-archive-keyring.gpg --batch --yes
 
-        . /etc/os-release; if [ ! -z ${UBUNTU_CODENAME+x} ]; then DIST="${UBUNTU_CODENAME}"; else DIST="$(lsb_release -c| awk '{print $2}')"; fi; \
-        echo "deb [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] http://packages.icinga.com/ubuntu icinga-${DIST} main" > \
-        /etc/apt/sources.list.d/${DIST}-icinga.list
+        . /etc/os-release
 
-        echo "deb-src [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] http://packages.icinga.com/ubuntu icinga-${DIST} main" >> \
-        /etc/apt/sources.list.d/${DIST}-icinga.list
+        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+            echo "Current os is $ID with codename $VERSION_CODENAME... Install repository..."
+        else
+            echo "Could not find os version for icinga repository... Try fallback..."
+            echo "Fallback is file /etc/netzint/ni-ncm-agent/icinga-repo.ini with content"
+            echo ">  ID={os like ubuntu or debian}"
+            echo ">  VERSION_CODENAME={version codename like focal or bullseye}"
+            echo ""
+
+            if [ -f "/etc/netzint/ni-ncm-agent/icinga-repo.ini" ]; then
+                echo "Fallback exist. Now using this as icinga repository!"
+                . /etc/netzint/ni-ncm-agent/icinga-repo.ini
+            else
+                echo "########"
+                echo "Fallback does not exist... Please refer the manuel or ask for help!"
+                echo "########"
+            fi
+
+        fi
+
+        echo "deb [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/${ID} icinga-${VERSION_CODENAME} main" > \
+            /etc/apt/sources.list.d/${VERSION_CODENAME}-icinga.list
+        echo "deb-src [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/${ID} icinga-${VERSION_CODENAME} main" >> \
+            /etc/apt/sources.list.d/${VERSION_CODENAME}-icinga.list
 
         sleep 5
 
         apt-get update
+
+        # delete old ncm sudoers file, will be replaced by new one
+        rm -rf /etc/sudoers.d/ncm
 
         exit 0
         ;;

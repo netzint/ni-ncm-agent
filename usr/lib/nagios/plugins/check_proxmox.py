@@ -9,19 +9,7 @@
 #
 ###################################################
 
-#
-# This to check: Cluster health, pve version, disk-health, vm-status / snapshots
-#
-# cluster-status: pvesh get /cluster/status --output-format json-pretty
-# ceph-status: pvesh get /cluster/ceph/status --output-format json-pretty
-# storage-status: pvesh get /nodes/$(hostname)/storage --output-format json-pretty
-# disk-status: pvesh get /nodes/$(hostname)/disks/list --output-format json-pretty
-# host-version: pvesh get /version --output-format json-pretty
-# vms-status: pvesh get /nodes/$(hostname)/qemu --output-format json-pretty
-# vms-snapshot: pvesh get /nodes/$(hostname)/qemu/701/snapshot --output-format json-pretty | name != current
-#
-
-import optparse
+import argparse
 import os
 import socket
 import json
@@ -34,7 +22,7 @@ def __execute(command):
     for cmd in command:
         commandline += cmd + " "
     stream = os.popen(commandline)
-    return stream.read()
+    return json.loads(stream.read())
 
 def __exit_ok(message):
     print("OK - " + message)
@@ -52,21 +40,21 @@ def __exit_unknown(message):
     print("UNKNOWN - " + message)
     exit(3)
 
-def getValueFromProxmox(url):
+def getValueFromProxmox(url, append=""):
     url = url.replace("$hostname$", socket.gethostname())
-    return json.loads(__execute(["sudo", "pvesh", "get", url, "--output-format json"]))
+    return __execute(["sudo", "pvesh", "get", url, append, "--output-format json"])
 
 def main():
-    optp = optparse.OptionParser()
-    optp.add_option('-i', '--info', help='host-version, cluster-status, ceph-status, storage-status, disk-status, vms-status', dest='info')
-    optp.add_option('-w', '--warning', help='Warning in percent', dest='warning')
-    optp.add_option('-c', '--critical', help='Critical in percent', dest='critical')
-    opts, args = optp.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--info', help='Info category to choose', required = True, choices=["host-version", "cluster-status", "ceph-status", "storage-status", "disk-status", "vms-status", "backup-status", "osd-status"], dest='info')
+    parser.add_argument('-w', '--warning', help='Warning in percent', dest='warning')
+    parser.add_argument('-c', '--critical', help='Critical in percent', dest='critical')
+    args = parser.parse_args()
 
-    if opts.info == "host-version":
+    if args.info == "host-version":
         __exit_ok(socket.gethostname() + " - Proxmox Version: " + getValueFromProxmox("/version")["version"])
 
-    elif opts.info == "cluster-status":
+    elif args.info == "cluster-status":
         json = getValueFromProxmox("/cluster/status")
         output = ""
         error = False
@@ -85,7 +73,7 @@ def main():
         else:
             __exit_ok("Alle host(s) are ok! \n\n" + output)
 
-    elif opts.info == "ceph-status":
+    elif args.info == "ceph-status":
         json = getValueFromProxmox("/cluster/ceph/status")
         if json["health"]["status"] == "HEALTH_OK":
             __exit_ok("Ceph is healthy!")
@@ -102,43 +90,53 @@ def main():
         else:
             __exit_unknown("Unable to get ceph health status!")
 
-    elif opts.info == "storage-status":
-        if opts.warning == None or opts.critical == None:
+    elif args.info == "storage-status":
+        if args.warning == None or args.critical == None:
             __exit_unknown("Commandline incomplete!")
         json = getValueFromProxmox("/nodes/$hostname$/storage")
         message = ""
+        prefdata = ""
         error = False
         warning = False
         for entry in json:
             if entry["active"] == 1:
                 usage = round((entry["used"] / entry["total"]) * 100)
                 line = "Name: " + entry["storage"] + ", Usage: " + str(usage) + "% (" + str(round(entry["used"] / 1024 / 1024 / 1024)) + " GB / " + str(round(entry["total"] / 1024 / 1024 / 1024)) + " GB) \n"
-                if usage >= int(opts.warning) and usage < int(opts.critical):
+                
+                prefdata += " " + entry["storage"] + "="
+                prefdata += str(round(entry["used"] / 1024 / 1024 / 1024, 2)) + ";"
+                prefdata += str(round(entry["total"] * (int(args.warning) / 100) / 1024 / 1024 / 1024, 2)) + ";"
+                prefdata += str(round(entry["total"] * (int(args.critical) / 100) / 1024 / 1024 / 1024, 2)) + ";0;"
+                prefdata += str(round(entry["total"] / 1024 / 1024 / 1024, 2))
+
+                if usage >= int(args.warning) and usage < int(args.critical):
                     warning = True
                     message += "[WARNING] " + line
-                elif usage >= int(opts.critical):
+                elif usage >= int(args.critical):
                     critical = True
                     message += "[CRITICAL] " + line
                 else:
                     message += "[OK] " + line
 
         if error:
-            __exit_critical("Storage critical. Please check: \n\n" + message)
+            __exit_critical("Storage critical. Please check: \n\n" + message + " |" + prefdata)
         elif warning:
-            __exit_warning("Storage warning. Please check: \n\n" + message)
+            __exit_warning("Storage warning. Please check: \n\n" + message + " |" + prefdata)
         else:
-            __exit_ok("Storage OK! \n\n" + message)
+            __exit_ok("Storage OK! \n\n" + message + " |" + prefdata)
 
-    elif opts.info == "disk-status":
+    elif args.info == "disk-status":
         json = getValueFromProxmox("/nodes/$hostname$/disks/list")
         message = ""
         error = False
         for entry in json:
-            line = "Name: " + entry["vendor"].replace(" ", "") + " " + entry["model"] + ", Size: " + str(round(entry["size"] / 1024 / 1024 / 1024)) + " GB, Path: " + entry["devpath"] + "\n"
+            line = "Name: " + entry["vendor"].replace(" ", "") + " " + entry["model"] + ", Size: " + str(round(entry["size"] / 1024 / 1024 / 1024)) + " GB, Path: " + entry["devpath"] 
             if entry["health"] == "OK" or entry["health"] == "PASSED":
-                message += "[OK] " + line
+                message += "[OK] " + line + "\n"
+            elif entry["health"] == "UNKNOWN":
+                message += "[OK] " + line + " (RAID Controller, no SMART values!)\n" 
             else:
-                message += "[CRITICAL] " + line
+                message += "[CRITICAL] " + line + "\n"
                 error = True
 
         if error:
@@ -146,16 +144,16 @@ def main():
         else:
             __exit_ok("All disks are ok! \n\n" + message)
 
-    elif opts.info == "vms-status":
-        if opts.warning == None or opts.critical == None:
+    elif args.info == "vms-status":
+        if args.warning == None or args.critical == None:
             __exit_unknown("Commandline incomplete!")
         json = getValueFromProxmox("/nodes/$hostname$/qemu")
         message = ""
         error = False
         warning = False
         for entry in json:
-            json2 = getValueFromProxmox("/nodes/$hostname$/qemu/" + entry["vmid"] + "/snapshot")
-            line = "Name: " + entry["name"] + "(" + entry["vmid"] + "), Status: " + entry["status"] + ", Uptime: " + str(datetime.timedelta(seconds=int(entry["uptime"])))
+            json2 = getValueFromProxmox("/nodes/$hostname$/qemu/" + str(entry["vmid"]) + "/snapshot")
+            line = "Name: " + entry["name"] + "(" + str(entry["vmid"]) + "), Status: " + entry["status"] + ", Uptime: " + str(datetime.timedelta(seconds=int(entry["uptime"])))
             if len(json2) > 1:
                 line += ", " + str(len(json2) - 1) + " Snapshot(s): "
                 tmp_error = False
@@ -164,8 +162,8 @@ def main():
                     if snapshot["name"] != "current":
                         snapshot_age = datetime.timedelta(seconds=(dt.timestamp(dt.now()) - snapshot["snaptime"]))
                         line += snapshot["name"] + " (" + str(snapshot_age.days) + " days), "
-                        if snapshot_age.days > int(opts.warning):
-                            if snapshot_age.days > int(opts.critical):
+                        if snapshot_age.days > int(args.warning):
+                            if snapshot_age.days > int(args.critical):
                                 tmp_error = True
                             else:
                                 tmp_warning = True
@@ -186,7 +184,87 @@ def main():
         else:
             __exit_ok("All VMs are OK! \n\n" + message)
 
+    elif args.info == "backup-status":
+        backupPlans = {}
+        for backup in getValueFromProxmox("/cluster/backup"):
+            backupInfos = getValueFromProxmox("/cluster/backup/" + backup["id"])
+            backupPlans[backupInfos["starttime"]] = backupInfos
 
+        json = getValueFromProxmox("/nodes/$hostname$/tasks", "--typefilter vzdump --limit 10")
+        message = ""
+        error = False
+
+        for entry in json:
+            starttime = dt.fromtimestamp(entry["starttime"])
+            if starttime.strftime('%H:%M') in backupPlans:
+                message += "Infos for backup '" + backupPlans[starttime.strftime('%H:%M')]["dow"] + "' at '" + backupPlans[starttime.strftime('%H:%M')]["starttime"] + "':\n"
+                now = dt.now()
+                timespanLastBackup = (now - starttime)
+                timespanLastBackup = (timespanLastBackup.seconds / 60 / 60) + (timespanLastBackup.days * 24)
+
+                json2 = getValueFromProxmox("/nodes/$hostname$/tasks/" + entry["upid"] + "/log", "--limit 9999999")
+                backupTasks = {}
+                lastBackupTask = None
+                for line in json2:
+                    if "INFO: Starting Backup of VM" in line["t"]:
+                        pvid = line["t"].replace("INFO: Starting Backup of VM ", "").strip().split(" ")[0]
+                        backupTasks[pvid] = {"name": "n/a", "size": "n/a", "time": "n/a", "rate": "n/a", "reuse": "n/a", "status": "success", "message": ""}
+                        newBackupTask = True
+                        lastBackupTask = pvid
+
+                    if lastBackupTask is not None:
+                        if "INFO: VM Name:" in line["t"]:
+                            backupTasks[lastBackupTask]["name"] = line["t"].replace("INFO: VM Name:", "").strip()
+                        if "INFO: transferred" in line["t"]:
+                            backupTasks[lastBackupTask]["size"] = line["t"].split(" ")[2]
+                            backupTasks[lastBackupTask]["time"] = line["t"].split(" ")[5]
+                            backupTasks[lastBackupTask]["rate"] = line["t"].split(" ")[7].replace("(", "").replace(")", "")
+                        if "INFO: backup was done" in line["t"]:
+                            backupTasks[lastBackupTask]["reuse"] = line["t"].split(" ")[8].replace("(", "").replace(")", "")
+                        if "ERROR: Backup of VM " + lastBackupTask + " failed" in line["t"]:
+                            backupTasks[lastBackupTask]["status"] = "failed"
+                            backupTasks[lastBackupTask]["message"] = line["t"]
+
+                for backup in backupTasks:
+                    if backupTasks[backup]["status"] == "success":
+                        message += "  [OK] " + backupTasks[backup]["name"] + " (" + backup + ") - Transfer " + backupTasks[backup]["size"] + " GiB in " + backupTasks[backup]["time"] + " seconds with " + backupTasks[backup]["rate"] + " MiB/s\n"
+                    else:
+                        message += "  [CRITICAL] " + backupTasks[backup]["name"] + " (" + backup + ") - Message: " + backupTasks[backup]["message"] + "\n"
+                        error = True
+
+                message += "\n\n"
+
+                if timespanLastBackup > 28:
+                    error = True
+
+                break
+
+        if error:
+            __exit_critical("Last backup was " + str(round(timespanLastBackup, 2)) + " ago and is older than 28 hour(s)!\n\n" + message)
+        __exit_ok("Backups ok! Last backup was " + str(round(timespanLastBackup, 2)) + " hour(s) ago.\n\n" + message)
+
+    elif args.info == "osd-status":
+        osdList = __execute(["sudo", "ceph", "osd", "df", "tree", "-f", "json"])
+
+        message = ""
+        error = False
+
+        for osd in osdList["nodes"]:
+            if osd["id"] > 0:
+                if osd["status"] == "up":
+                    message += "[OK] "
+                else:
+                    message += "[CRITICAL] "
+                
+                total = osd["kb"]
+                used = osd["kb_used"]
+                percent = (used / total) * 100
+
+                message += "- " + osd["name"] + " (" + osd["device_class"].upper() + ") - " + str(round(used / 1024 / 1024 / 1024, 2)) + " / " + str(round(total / 1024 / 1024 / 1024, 2)) + " TB = " + str(round(percent, 2)) + "% ussage\n"
+
+        if error:
+            __exit_critical("Some of the OSDs have a problem!\n\n" + message)
+        __exit_ok("All OSDs are up!\n\n" + message)
 
     else:
         __exit_unknown("Commandline incomplete!")
