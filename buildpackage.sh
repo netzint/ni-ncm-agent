@@ -2,7 +2,7 @@
 
 # build the debian package
 
-platforms=( bionic focal bullseye buster )
+platforms=( bionic focal jammy bullseye buster )
 
 for platform in "${platforms[@]}"
 do
