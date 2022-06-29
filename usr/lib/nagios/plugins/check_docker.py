@@ -50,16 +50,26 @@ def getDockerDetails(name):
     result = json.loads(__execute(["docker", "inspect", name]))
     return result[0]
 
+def countRunningContainers():
+    result = __execute(["docker", "ps", "|", "wc", "-l"])
+    return (int(result) - 1)
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--name", required = True, help = "Name of docker container to be monitored (separated by ',')") 
+    parser.add_argument("--name", required = False, help = "Name of docker container to be monitored (separated by ',')") 
     args = parser.parse_args()
+
+    if countRunningContainers() == 0:
+        if not args.name:
+            __exit_ok("No containers currently running on this system!")
+        else:
+            __exit_critical("All monitored containers are offline!")
 
     docker = getAllDockerContainer()
 
     dockertocheck = []
     dockernottocheck = []
-    
+
     if "," in args.name:
         for entry in args.name.split(","):
             if entry in docker:
