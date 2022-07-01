@@ -185,19 +185,33 @@ def main():
             __exit_ok("All VMs are OK! \n\n" + message)
 
     elif args.info == "backup-status":
+        if args.warning == None or args.critical == None:
+            __exit_unknown("Commandline incomplete!")
         backupPlans = {}
         for backup in getValueFromProxmox("/cluster/backup"):
             backupInfos = getValueFromProxmox("/cluster/backup/" + backup["id"])
-            backupPlans[backupInfos["starttime"]] = backupInfos
+            if "starttime" in backupInfos:
+                backupPlans[backupInfos["starttime"]] = backupInfos
+            elif "schedule" in backupInfos:
+                backupPlans[backupInfos["schedule"]] = backupInfos
 
         json = getValueFromProxmox("/nodes/$hostname$/tasks", "--typefilter vzdump --limit 10")
         message = ""
         error = False
+        warning = False
+        critical = False
 
         for entry in json:
-            starttime = dt.fromtimestamp(entry["starttime"])
+            if "starttime" in entry:
+                starttime = dt.fromtimestamp(entry["starttime"])
+            elif "schedule" in entry:
+                starttime = dt.fromtimestamp(entry["schedule"])
             if starttime.strftime('%H:%M') in backupPlans:
-                message += "Infos for backup '" + backupPlans[starttime.strftime('%H:%M')]["dow"] + "' at '" + backupPlans[starttime.strftime('%H:%M')]["starttime"] + "':\n"
+                if "dow" in backupPlans[starttime.strftime('%H:%M')]:
+                    dayschedule = backupPlans[starttime.strftime('%H:%M')]["dow"]
+                else:
+                    dayschedule = "daily"
+                message += "Infos for backup '" + dayschedule + "' at '" + starttime.strftime('%H:%M') + "':\n"
                 now = dt.now()
                 timespanLastBackup = (now - starttime)
                 timespanLastBackup = (timespanLastBackup.seconds / 60 / 60) + (timespanLastBackup.days * 24)
@@ -234,14 +248,22 @@ def main():
 
                 message += "\n\n"
 
-                if timespanLastBackup > 28:
-                    error = True
+                if timespanLastBackup > int(args.warning):
+                    warning = True
+                elif timespanLastBackup > int(args.critical):
+                    critical = True
 
                 break
 
         if error:
-            __exit_critical("Last backup was " + str(round(timespanLastBackup, 2)) + " ago and is older than 28 hour(s)!\n\n" + message)
-        __exit_ok("Backups ok! Last backup was " + str(round(timespanLastBackup, 2)) + " hour(s) ago.\n\n" + message)
+            __exit_critical("One or more backup(s) failed! Please check the log for more details!\n\n" + message)
+
+        if warning:
+            __exit_warning("Last backup was " + str(round(timespanLastBackup, 2)) + " ago and is older than " + args.warning + " hour(s)!\n\n" + message)
+        elif critical:
+            __exit_critical("Last backup was " + str(round(timespanLastBackup, 2)) + " ago and is older than " + args.critical  + " hour(s)!\n\n" + message)
+        else:
+            __exit_ok("Backups ok! Last backup was " + str(round(timespanLastBackup, 2)) + " hour(s) ago.\n\n" + message)
 
     elif args.info == "osd-status":
         osdList = __execute(["sudo", "ceph", "osd", "df", "tree", "-f", "json"])

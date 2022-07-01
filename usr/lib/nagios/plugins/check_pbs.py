@@ -93,17 +93,29 @@ def main():
             name = entry["store"]
             total = entry["total"]
             used = entry["used"]
+
+            message += name + " - Usage: " + KBToTB(used) + " / " + KBToTB(total) + " TB = " + str(round((used / total) * 100, 2)) 
+
             estimatedFullDate = dt.fromtimestamp(entry["estimated-full-date"])
             now = dt.now()
             timespanEstimatedFullDate = (estimatedFullDate - now)
-            if timespanEstimatedFullDate.days < int(args.warning):
+            timespanEstimatedFullDate = timespanEstimatedFullDate.days
+
+            if timespanEstimatedFullDate < int(args.warning):
                 warning = True
-            if timespanEstimatedFullDate.days < int(args.critical):
+            if timespanEstimatedFullDate < int(args.critical):
                 error = True
 
-            message += name + " - Usage: " + KBToTB(used) + " / " + KBToTB(total) + " TB = " + str(round((used / total) * 100, 2)) + "% - Estimated Full: " + estimatedFullDate.strftime('%d.%m.%Y %H:%M:%S') + " (" + str(timespanEstimatedFullDate.days) + " days)"
+            if timespanEstimatedFullDate > 0 and (total - used) > 1000:
+                message += "% - Estimated Full: " + estimatedFullDate.strftime('%d.%m.%Y %H:%M:%S') + " (" + str(timespanEstimatedFullDate) + " days)"
+            else:
+                error = False
+                warning = False
+                message += "% - Estimated Full: never"
+                timespanEstimatedFullDate = 0
+
             prefdata += " " + name + "_usage=" + KBToTB(used) + ";" + KBToTB(total, 0.8) + ";" + KBToTB(total, 0.9) + ";0;" + KBToTB(total)
-            prefdata += " " + name + "_full=" + str(timespanEstimatedFullDate.days)
+            prefdata += " " + name + "_full=" + str(timespanEstimatedFullDate) + ";" + args.warning + ";" + args.critical
 
         if error:
             __exit_critical(message + " |" + prefdata)
@@ -113,8 +125,11 @@ def main():
             __exit_ok(message + " |" + prefdata)
 
     elif args.info == "garbage-collection-status":
-        values = __execute(["sudo", "proxmox-backup-debug", "api", "get", "nodes/" + socket.gethostname() + "/tasks", "--typefilter garbage_collection", "--limit 2", "--output-format json"])
+        values = __execute(["sudo", "proxmox-backup-debug", "api", "get", "nodes/" + socket.gethostname().split('.', 1)[0] + "/tasks", "--typefilter garbage_collection", "--limit 2", "--output-format json"])
+        if len(values) == 0:
+            __exit_ok("No garbage collection has run so far...")
         for entry in values:
+            print(entry)
             if "endtime" in entry:
                 starttime = dt.fromtimestamp(entry["starttime"])
                 endtime = dt.fromtimestamp(entry["endtime"])
