@@ -56,7 +56,7 @@ def countRunningContainers():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--name", required = False, help = "Name of docker container to be monitored (separated by ',')") 
+    parser.add_argument("--name", required = False, help = "Name of docker container to be monitored (separated by ',')", default = "") 
     args = parser.parse_args()
 
     if countRunningContainers() == 0:
