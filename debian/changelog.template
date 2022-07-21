@@ -1,3 +1,9 @@
+ni-ncm-agent (1.2.5-%platform%) %platform%; urgency=medium
+
+  * aecbfae4ae0e7eee99a3831617427b5b981f7ac3
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Fri, 18 Jul 2022 09:11:46 +0200
+
 ni-ncm-agent (1.2.4-%platform%) %platform%; urgency=medium
 
   * 8f4be7f997dfc8ad95fd6c62499ac9ef10b800fc
