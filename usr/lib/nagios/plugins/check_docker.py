@@ -81,8 +81,6 @@ def main():
         if args.name in docker:
             dockertocheck.append(getDockerDetails(args.name))
             docker.pop(args.name)
-        else:
-            dockertocheck.append({"Name": entry, "Config": {"Image": "n/a"}, "State": {"Running": False}})
 
     for entry in docker:
         if "Up" in docker[entry]["status"]:
@@ -109,7 +107,6 @@ def main():
     else:
         __exit_ok("All monitored containers are online!\n\n" + infoline)
 
-        
 
 
 if __name__=="__main__":
