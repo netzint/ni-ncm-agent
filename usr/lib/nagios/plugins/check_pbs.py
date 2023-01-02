@@ -42,7 +42,7 @@ def __exit_unknown(message):
     exit(3)
 
 def getValueFromPBS(url, method="list", append=""):
-    return __execute(["sudo", "proxmox-backup-manager", url, method, append, "--output-format json"])
+    return __execute(["sudo", "/usr/sbin/proxmox-backup-manager", url, method, append, "--output-format json"])
 
 def KBToTB(value, calc=1):
     return str(round((value / 1024 / 1024 / 1024 / 1024) * calc, 2))
