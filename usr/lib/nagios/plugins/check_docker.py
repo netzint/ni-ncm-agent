@@ -40,7 +40,17 @@ def __exit_unknown(message):
 
 
 def getAllDockerContainer():
-    result = json.loads(__execute(["docker", "ps", "-a", "--format", "'{\"id\":\"{{ .ID }}\", \"name\":\"{{ .Names }}\", \"status\":\"{{ .Status }}\"}'", "|", "jq", "--slurp"]))
+    resultString = __execute(["docker", "ps", "-a", "--format", "'{\"id\":\"{{ .ID }}\", \"name\":\"{{ .Names }}\", \"status\":\"{{ .Status }}\"}'"])
+    try:
+        result = json.loads(resultString)
+    except:
+        result = []
+        try:
+            for line in resultString.splitLines():
+                result.append(line)
+        except:
+            return False
+                
     tmp = {}
     for entry in result:
         tmp[entry["name"]] = entry
@@ -66,6 +76,9 @@ def main():
             __exit_critical("All monitored containers are offline!")
 
     docker = getAllDockerContainer()
+    
+    if not docker:
+        __exit_critical("Error parsing docker output!")
 
     dockertocheck = []
     dockernottocheck = []
