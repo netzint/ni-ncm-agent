@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 4.0.0), fakeroot
 
 Package: ni-ncm-agent
 Architecture: all
-Depends: monitoring-plugins, python3, python3-requests, python3-pip, jq
+Depends: monitoring-plugins, python3, python3-requests, python3-pip, jq, python3-docker
 Homepage: www.netzint.de
 Recommends:
 Description: NCM Agent installer from Netzint GmbH

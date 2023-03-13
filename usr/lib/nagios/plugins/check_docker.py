@@ -13,6 +13,7 @@ import argparse
 import os
 import json
 import datetime
+import docker
 
 def __execute(command):
     commandline = "sudo "
@@ -37,77 +38,86 @@ def __exit_unknown(message):
     print("UNKNOWN - " + message)
     exit(3)
 
-
-
-def getAllDockerContainer():
-    resultString = __execute(["docker", "ps", "-a", "--format", "'{\"id\":\"{{ .ID }}\", \"name\":\"{{ .Names }}\", \"status\":\"{{ .Status }}\"}'"])
-    try:
-        result = json.loads(resultString)
-    except:
-        result = []
-        try:
-            for line in resultString.splitLines():
-                result.append(line)
-        except:
-            return False
+# def getAllDockerContainer():
+#     resultString = __execute(["docker", "ps", "-a", "--format", "'{\"id\":\"{{ .ID }}\", \"name\":\"{{ .Names }}\", \"status\":\"{{ .Status }}\"}'"])
+#     try:
+#         result = json.loads(resultString)
+#     except:
+#         result = []
+#         try:
+#             for line in resultString.splitLines():
+#                 result.append(line)
+#         except:
+#             return False
                 
-    tmp = {}
-    for entry in result:
-        tmp[entry["name"]] = entry
-    return tmp
+#     tmp = {}
+#     for entry in result:
+#         tmp[entry["name"]] = entry
+#     return tmp
 
-def getDockerDetails(name):
-    result = json.loads(__execute(["docker", "inspect", name]))
-    return result[0]
+# def getDockerDetails(name):
+#     result = json.loads(__execute(["docker", "inspect", name]))
+#     return result[0]
 
-def countRunningContainers():
-    result = __execute(["docker", "ps", "|", "wc", "-l"])
-    return (int(result) - 1)
+# def countRunningContainers():
+#     result = __execute(["docker", "ps", "|", "wc", "-l"])
+#     return (int(result) - 1)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", required = False, help = "Name of docker container to be monitored (separated by ',')", default = "") 
     args = parser.parse_args()
 
-    if countRunningContainers() == 0:
+    dockerClient = docker.from_env()
+    containerList = dockerClient.containers.list()
+
+    if len(containerList) == 0:
         if not args.name:
             __exit_ok("No containers currently running on this system!")
-        else:
-            __exit_critical("All monitored containers are offline!")
+        # else:
+        #     __exit_critical("All monitored containers are offline!")
 
-    docker = getAllDockerContainer()
-    
-    if not docker:
-        __exit_critical("Error parsing docker output!")
+    runningContainer = {}
+    for container in containerList:
+        runningContainer[container.name] = {
+            "name": container.name,
+            "image": container.image.tags[0],
+            "status": container.status,
+            "attrs": container.attrs
+        }
 
     dockertocheck = []
     dockernottocheck = []
 
     if "," in args.name:
         for entry in args.name.split(","):
-            if entry in docker:
-                dockertocheck.append(getDockerDetails(entry))
-                docker.pop(entry)
-            else:
-                dockertocheck.append({"Name": entry, "Config": {"Image": "n/a"}, "State": {"Running": False}})
+            if entry in runningContainer: # container should be monitored and is running, add container to dockertocheck array
+                dockertocheck.append(runningContainer[entry])
+                runningContainer.pop(entry)
+            else: # container should be monitored but is not running, add dummy entry to dockertocheck array
+                dockertocheck.append({"name": entry, "image": "n/a", "status": "off", "attrs": {}})
     else:
-        if args.name in docker:
-            dockertocheck.append(getDockerDetails(args.name))
-            docker.pop(args.name)
+        if args.name != "":
+            if args.name in runningContainer: # container should be monitored and is running, add container to dockertocheck array
+                    dockertocheck.append(runningContainer[args.name])
+                    runningContainer.pop(args.name)
+            else: # container should be monitored but is not running, add dummy entry to dockertocheck array
+                dockertocheck.append({"name": args.name, "image": "n/a", "status": "off", "attrs": {}})
 
-    for entry in docker:
-        if "Up" in docker[entry]["status"]:
-            dockernottocheck.append(docker[entry])
+    for entry in runningContainer:
+        if "running" in runningContainer[entry]["status"]:
+            dockernottocheck.append(runningContainer[entry])
 
     infoline = ""
     error = False
 
     for entry in dockertocheck:
-        if entry["State"]["Running"]:
-            uptime = datetime.datetime.now() - datetime.datetime.strptime(entry["State"]["StartedAt"][:-4], '%Y-%m-%dT%H:%M:%S.%f')
-            infoline += "[OK] " + entry["Name"].replace("/", "") + " with image " + entry["Config"]["Image"] + ", Uptime: " + str(uptime).split(".")[0] + "\n"
+        attrs = entry["attrs"]
+        if "State" in attrs and attrs["State"]["Running"]:
+            uptime = datetime.datetime.utcnow() - datetime.datetime.strptime(attrs["State"]["StartedAt"][:-4], '%Y-%m-%dT%H:%M:%S.%f')
+            infoline += "[OK] " + entry["name"].replace("/", "") + " with image " + entry["image"] + ", Uptime: " + str(uptime).split(".")[0] + "\n"
         else:
-            infoline += "[CRITICAL] " + entry["Name"].replace("/", "") + " with image " + entry["Config"]["Image"] + " is not running!\n"
+            infoline += "[CRITICAL] " + entry["name"].replace("/", "") + " with image " + entry["image"] + " is not running!\n"
             error = True
 
     if len(dockernottocheck) >= 1:
