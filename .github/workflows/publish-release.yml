@@ -5,6 +5,7 @@ on:
     workflows: ["Build Release"]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   publish_latest_release_to_package_server:
