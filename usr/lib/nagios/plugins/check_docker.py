@@ -10,17 +10,8 @@
 ###################################################
 
 import argparse
-import os
-import json
 import datetime
 import docker
-
-def __execute(command):
-    commandline = "sudo "
-    for cmd in command:
-        commandline += cmd + " "
-    stream = os.popen(commandline)
-    return stream.read()
 
 def __exit_ok(message):
     print("OK - " + message)
@@ -38,44 +29,20 @@ def __exit_unknown(message):
     print("UNKNOWN - " + message)
     exit(3)
 
-# def getAllDockerContainer():
-#     resultString = __execute(["docker", "ps", "-a", "--format", "'{\"id\":\"{{ .ID }}\", \"name\":\"{{ .Names }}\", \"status\":\"{{ .Status }}\"}'"])
-#     try:
-#         result = json.loads(resultString)
-#     except:
-#         result = []
-#         try:
-#             for line in resultString.splitLines():
-#                 result.append(line)
-#         except:
-#             return False
-                
-#     tmp = {}
-#     for entry in result:
-#         tmp[entry["name"]] = entry
-#     return tmp
-
-# def getDockerDetails(name):
-#     result = json.loads(__execute(["docker", "inspect", name]))
-#     return result[0]
-
-# def countRunningContainers():
-#     result = __execute(["docker", "ps", "|", "wc", "-l"])
-#     return (int(result) - 1)
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", required = False, help = "Name of docker container to be monitored (separated by ',')", default = "") 
     args = parser.parse_args()
 
-    dockerClient = docker.from_env()
-    containerList = dockerClient.containers.list()
+    try:
+        dockerClient = docker.from_env()
+        containerList = dockerClient.containers.list()
+    except:
+        __exit_unknown("Could not get container. Please check permissons!")
 
     if len(containerList) == 0:
         if not args.name:
             __exit_ok("No containers currently running on this system!")
-        # else:
-        #     __exit_critical("All monitored containers are offline!")
 
     runningContainer = {}
     for container in containerList:

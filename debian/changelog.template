@@ -1,3 +1,9 @@
+ni-ncm-agent (1.2.8-%platform%) %platform%; urgency=medium
+
+  * update check_docker and add docker permisson to nagios user
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Mon, 13 Mar 2023 09:11:46 +0200
+
 ni-ncm-agent (1.2.7-%platform%) %platform%; urgency=medium
 
   * update check_docker

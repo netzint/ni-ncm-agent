@@ -3,6 +3,7 @@ set -e
 
 case "$1" in
     install|configure)
+        /usr/sbin/usermod -aG docker nagios > /dev/null 2>&1
         ;;
     upgrade|abort-upgrade)
         ;;
