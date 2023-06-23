@@ -3,10 +3,14 @@ set -e
 
 case "$1" in
     install|configure)
-        echo "Adding user nagios to docker group..."
-        /usr/sbin/usermod -aG docker nagios > /dev/null 2>&1
-        echo "Set ACL permission for user nagios on docker socket..."
-        /usr/bin/setfacl -m user:nagios:rw /var/run/docker.sock > /dev/null 2>&1
+        if $(which docker 2>&1 > /dev/null); then
+            echo "Adding user nagios to docker group..."
+            /usr/sbin/usermod -aG docker nagios > /dev/null 2>&1
+            if $(which setfacl 2>&1 > /dev/null); then
+                echo "Set ACL permission for user nagios on docker socket..."
+                /usr/bin/setfacl -m user:nagios:rw /var/run/docker.sock > /dev/null 2>&1
+            fi
+        fi
         ;;
     upgrade|abort-upgrade)
         ;;
