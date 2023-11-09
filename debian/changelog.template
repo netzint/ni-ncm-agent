@@ -1,3 +1,9 @@
+ni-ncm-agent (1.3.1-%platform%) %platform%; urgency=medium
+
+  * Update proxmox check
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 09 Nov 2023 22:39:46 +0200
+
 ni-ncm-agent (1.3.0-%platform%) %platform%; urgency=medium
 
   * Fix problem while installation or update on non docker hosts
