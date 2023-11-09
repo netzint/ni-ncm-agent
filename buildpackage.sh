@@ -2,7 +2,7 @@
 
 # build the debian package
 
-platforms=( bionic focal jammy bullseye buster )
+platforms=( bionic focal jammy bullseye buster bookworm )
 
 for platform in "${platforms[@]}"
 do
@@ -10,6 +10,3 @@ do
   dpkg-buildpackage -rfakeroot -tc -sa -us -uc -I".directory" -I".git" -I"buildpackage.sh"
   rm debian/changelog
 done
-
-
-#dpkg-buildpackage -rfakeroot -tc -sa -us -uc -I".directory" -I".git" -I"buildpackage.sh"

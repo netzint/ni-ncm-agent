@@ -266,27 +266,40 @@ def main():
             __exit_ok("Backups ok! Last backup was " + str(round(timespanLastBackup, 2)) + " hour(s) ago.\n\n" + message)
 
     elif args.info == "osd-status":
+        if args.warning == None or args.critical == None:
+            __exit_unknown("Commandline incomplete!")
+
         osdList = __execute(["sudo", "ceph", "osd", "df", "tree", "-f", "json"])
 
         message = ""
         error = False
+        warning = False
 
         for osd in osdList["nodes"]:
             if osd["id"] > 0:
-                if osd["status"] == "up":
-                    message += "[OK] "
-                else:
-                    message += "[CRITICAL] "
-                
+
                 total = osd["kb"]
                 used = osd["kb_used"]
                 percent = (used / total) * 100
 
-                message += "- " + osd["name"] + " (" + osd["device_class"].upper() + ") - " + str(round(used / 1024 / 1024 / 1024, 2)) + " / " + str(round(total / 1024 / 1024 / 1024, 2)) + " TB = " + str(round(percent, 2)) + "% ussage\n"
+                if osd["status"] == "up":
+                    if percent >= int(args.warning) and percent < int(args.critical):
+                        message += "[CRITICAL] "
+                    elif percent >= int(args.critical):
+                        message += "[WARNING] "
+                    else:
+                        message += "[OK] "
+                else:
+                    message += "[CRITICAL] "
+
+                message +=  osd["name"] + " (" + osd["device_class"].upper() + ") - " + str(round(used / 1024 / 1024 / 1024, 2)) + " / " + str(round(total / 1024 / 1024 / 1024, 2)) + " TB = " + str(round(percent, 2)) + "% ussage\n"
 
         if error:
             __exit_critical("Some of the OSDs have a problem!\n\n" + message)
-        __exit_ok("All OSDs are up!\n\n" + message)
+        elif warning:
+            __exit_warning("Some OSDs soon will have a problem!\n\n" + message)
+        else:
+            __exit_ok("All OSDs are up!\n\n" + message)
 
     else:
         __exit_unknown("Commandline incomplete!")
