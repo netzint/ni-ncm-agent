@@ -11,6 +11,7 @@ case "$1" in
                 /usr/bin/setfacl -m user:nagios:rw /var/run/docker.sock > /dev/null 2>&1
             fi
         fi
+        exit 0
         ;;
     upgrade|abort-upgrade)
         ;;
