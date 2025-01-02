@@ -4,7 +4,7 @@ ni-ncm-agent (1.3.3-%platform%) %platform%; urgency=medium
   * Add ubuntu nobel to build
   * Fix error on postinstall
 
- -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 09 Nov 2023 22:39:46 +0200
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Thu, 2 Jan 2025 14:41:46 +0200
 
 ni-ncm-agent (1.3.2-%platform%) %platform%; urgency=medium
 
