@@ -1,13 +1,27 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 case "$1" in
     install|configure)
-        wget -O - https://packages.icinga.com/icinga.key | gpg --dearmor -o /usr/share/keyrings/icinga-archive-keyring.gpg --batch --yes
+        KEYRING=/usr/share/keyrings/icinga-archive-keyring.gpg
+        TMPKEY="$(mktemp)"
+        trap 'rm -f "$TMPKEY"' EXIT
 
+        if ! wget --quiet --tries=3 --timeout=30 -O "$TMPKEY" \
+                https://packages.icinga.com/icinga.key; then
+            echo "ERROR: Could not download Icinga GPG key from packages.icinga.com" >&2
+            exit 1
+        fi
+        if ! [ -s "$TMPKEY" ]; then
+            echo "ERROR: Downloaded Icinga GPG key is empty" >&2
+            exit 1
+        fi
+        gpg --dearmor --batch --yes -o "$KEYRING" < "$TMPKEY"
+
+        # shellcheck disable=SC1091
         . /etc/os-release
 
-        if [ "$ID" == "ubuntu" ] || [ "$ID" == "debian" ]; then
+        if [ "${ID:-}" = "ubuntu" ] || [ "${ID:-}" = "debian" ]; then
             echo "Current os is $ID with codename $VERSION_CODENAME... Install repository..."
         else
             echo "Could not find os version for icinga repository... Try fallback..."
@@ -18,26 +32,26 @@ case "$1" in
 
             if [ -f "/etc/netzint/ni-ncm-agent/icinga-repo.ini" ]; then
                 echo "Fallback exist. Now using this as icinga repository!"
+                # shellcheck disable=SC1091
                 . /etc/netzint/ni-ncm-agent/icinga-repo.ini
             else
                 echo "########"
                 echo "Fallback does not exist... Please refer the manuel or ask for help!"
                 echo "########"
+                exit 1
             fi
-
         fi
 
-        echo "deb [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/${ID} icinga-${VERSION_CODENAME} main" > \
-            /etc/apt/sources.list.d/${VERSION_CODENAME}-icinga.list
-        echo "deb-src [signed-by=/usr/share/keyrings/icinga-archive-keyring.gpg] https://packages.icinga.com/${ID} icinga-${VERSION_CODENAME} main" >> \
-            /etc/apt/sources.list.d/${VERSION_CODENAME}-icinga.list
+        SRCLIST="/etc/apt/sources.list.d/${VERSION_CODENAME}-icinga.list"
+        {
+            echo "deb [signed-by=$KEYRING] https://packages.icinga.com/${ID} icinga-${VERSION_CODENAME} main"
+            echo "deb-src [signed-by=$KEYRING] https://packages.icinga.com/${ID} icinga-${VERSION_CODENAME} main"
+        } > "$SRCLIST"
 
-        sleep 5
-
-        apt-get update
+        apt-get update || echo "WARNING: apt-get update failed, continuing anyway" >&2
 
         # delete old ncm sudoers file, will be replaced by new one
-        rm -rf /etc/sudoers.d/ncm
+        rm -f /etc/sudoers.d/ncm
 
         exit 0
         ;;

@@ -12,15 +12,20 @@ import sys
 import socket
 import re
 import hashlib
+import subprocess
 import requests
 from collections import defaultdict
 from xml.dom.minidom import parse, parseString
 
 def getStatus():
-    stream = os.popen('sudo /usr/bin/docker exec  scalelite-api  ./bin/rake status | tail -n +2')
-    stream = stream.read()
+    result = subprocess.run(
+        ["/usr/bin/docker", "exec", "scalelite-api", "./bin/rake", "status"],
+        capture_output=True, text=True, check=False,
+    )
+    # Drop the rake header line (was: `| tail -n +2`)
+    lines = result.stdout.splitlines()[1:]
     allservers = []
-    for line in stream.splitlines():
+    for line in lines:
         fields = re.split(r'\s',line)
         fields = list(filter(None, fields))
         numfields = len(fields)

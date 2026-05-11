@@ -1,12 +1,28 @@
 #!/bin/sh
+set -e
+
 case "$1" in
     install|configure)
-        if $(which docker 2>&1 > /dev/null); then
-            echo "Adding user nagios to docker group..."
-            /usr/sbin/usermod -aG docker nagios > /dev/null 2>&1
-            if $(which setfacl 2>&1 > /dev/null); then
+        # Make sure the config directory exists (used by ticket.conf and the
+        # icinga-repo.ini fallback consumed by preinst).
+        mkdir -p /etc/netzint/ni-ncm-agent
+        chmod 755 /etc/netzint/ni-ncm-agent
+
+        # Enforce sudoers.d permissions (required by sudo-rs in Ubuntu 25.10+,
+        # best practice for sudo on every distro).
+        if [ -f /etc/sudoers.d/ncm ]; then
+            chown root:root /etc/sudoers.d/ncm
+            chmod 0440 /etc/sudoers.d/ncm
+        fi
+
+        if command -v docker > /dev/null 2>&1; then
+            if getent group docker > /dev/null 2>&1; then
+                echo "Adding user nagios to docker group..."
+                /usr/sbin/usermod -aG docker nagios > /dev/null 2>&1 || true
+            fi
+            if [ -S /var/run/docker.sock ] && command -v setfacl > /dev/null 2>&1; then
                 echo "Set ACL permission for user nagios on docker socket..."
-                /usr/bin/setfacl -m user:nagios:rw /var/run/docker.sock > /dev/null 2>&1
+                /usr/bin/setfacl -m user:nagios:rw /var/run/docker.sock > /dev/null 2>&1 || true
             fi
         fi
         exit 0

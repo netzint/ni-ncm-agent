@@ -1,3 +1,16 @@
+ni-ncm-agent (1.3.5-%platform%) %platform%; urgency=medium
+
+  * SECURITY: Replace os.popen() with subprocess.run(shell=False) in check_pbs.py, check_proxmox.py and check_bbb_cluster.py
+  * SECURITY: Drop "nagios NOPASSWD: /usr/bin/docker" from sudoers; nagios now uses the docker group / socket ACL only
+  * SECURITY: Harden preinst (set -euo pipefail, GPG key download via temp file, error on empty key)
+  * Fix bare except in check_docker.py
+  * Add Ubuntu 26.04 (resolute) to build matrix
+  * Rename ubuntu noble suffix (nobel -> noble)
+  * Enforce 0440 root:root on /etc/sudoers.d/ncm in postinst (compatibility with sudo-rs on Ubuntu 25.10+/26.04)
+  * Update GitHub Actions (checkout v4, softprops/action-gh-release v2, pinned appleboy actions)
+
+ -- Lukas Spitznagel <lukas.spitznagel@netzint.de>  Mon, 11 May 2026 12:00:00 +0200
+
 ni-ncm-agent (1.3.4-%platform%) %platform%; urgency=medium
 
   * Fix error on postinstall

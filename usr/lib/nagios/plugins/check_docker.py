@@ -37,7 +37,7 @@ def main():
     try:
         dockerClient = docker.from_env()
         containerList = dockerClient.containers.list()
-    except:
+    except docker.errors.DockerException:
         __exit_unknown("Could not get container. Please check permissons!")
 
     if len(containerList) == 0:

@@ -11,13 +11,13 @@ name: Build Release
 jobs:
   deb-package:
     name: build DEB-Package
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt update && sudo apt install debhelper -y
+        run: sudo apt update && sudo apt install debhelper fakeroot -y
 
       - name: Build
         run: ./buildpackage.sh
@@ -35,7 +35,9 @@ jobs:
     needs: deb-package
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
     name: GitHub Release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -45,26 +47,21 @@ jobs:
       - name: Extract current changes
         run: cat *.changes | sed '0,/^Changes:$/d' | sed '/Checksums.*/Q' | sed '1,2d' | tail >> ./current-changes
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release and upload assets
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body_path: ./current-changes
           draft: false
           prerelease: false
-          body_path: ./current-changes
+          files: |
+            *.deb
+            *.changes
+            *.dsc
+            *.tar.*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Delete current changes file
         run: rm ./current-changes
-
-      - name: Upload Release Assets
-        id: upload-release-assets
-        uses: dwenegar/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          release_id: ${{ steps.create_release.outputs.id }}
-          assets_path: .

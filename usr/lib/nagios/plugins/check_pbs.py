@@ -10,20 +10,23 @@
 ###################################################
 
 import argparse
-import os
-import socket
 import json
+import shlex
+import socket
+import subprocess
 import datetime
 
 from datetime import datetime as dt
 from datetime import timedelta
 
 def __execute(command):
-    commandline = ""
-    for cmd in command:
-        commandline += cmd + " "
-    stream = os.popen(commandline)
-    return json.loads(stream.read())
+    args = []
+    for part in command:
+        if not part:
+            continue
+        args.extend(shlex.split(part))
+    result = subprocess.run(args, capture_output=True, text=True, check=False)
+    return json.loads(result.stdout)
 
 def __exit_ok(message):
     print("OK - " + message)
