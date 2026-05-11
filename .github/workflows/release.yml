@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt update && sudo apt install debhelper fakeroot -y
+        run: sudo apt update && sudo apt install build-essential debhelper fakeroot -y
 
       - name: Build
         run: ./buildpackage.sh
