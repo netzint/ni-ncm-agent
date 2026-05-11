@@ -44,6 +44,7 @@ Pro Release werden Pakete für folgende Distributionen gebaut
 | Debian 10        | `buster`   |
 | Debian 11        | `bullseye` |
 | Debian 12        | `bookworm` |
+| Debian 13        | `trixie`   |
 
 > **Hinweis zum Umbenennen `nobel` → `noble`:** Frühere Releases haben den
 > Suffix `-nobel` benutzt. Auf einem reprepro-Server, der bisher eine
